@@ -22,12 +22,12 @@ def update_ticker_files(directory, tickers_file):
     Returns:
         list: List of recommended buy tickers (with weekly RSI < 20 and weekly stochastic RSI < 10)
     """
-    # Initialize list to store recommended buys
     recommended_buys = []
+    good_buys = []
     # Ensure the directory exists
     if not os.path.exists(directory):
         os.makedirs(directory)
-        
+
     # Read ticker symbols from file
     try:
         with open(tickers_file, "r") as f:
@@ -182,17 +182,25 @@ def update_ticker_files(directory, tickers_file):
             except Exception as e:
                 print(f"Error processing weekly data for {symbol}: {e}")
 
-            # Check if this stock meets the recommended buy criteria
-            if (not pd.isna(weekly_rsi) and not pd.isna(weekly_stoch_rsi) and
-                weekly_rsi < WEEKLY_RSI_THRESHOLD and weekly_stoch_rsi < WEEKLY_STOCH_RSI_THRESHOLD):
-                recommended_buys.append({
-                    'symbol': symbol,
-                    'price': close_price,
-                    'weekly_rsi': weekly_rsi,
-                    'weekly_stoch_rsi': weekly_stoch_rsi
-                })
-                print(f"Added {symbol} to recommended buys: RSI={weekly_rsi:.2f}, StochRSI={weekly_stoch_rsi:.2f}")
-
+            
+                        # Check if this stock meets the recommended buy criteria
+                        if not pd.isna(weekly_rsi) and not pd.isna(weekly_stoch_rsi):
+                            if weekly_rsi < WEEKLY_RSI_THRESHOLD and weekly_stoch_rsi < WEEKLY_STOCH_RSI_THRESHOLD:
+                                recommended_buys.append({
+                                    'symbol': symbol,
+                                    'price': close_price,
+                                    'weekly_rsi': weekly_rsi,
+                                    'weekly_stoch_rsi': weekly_stoch_rsi
+                                })
+                                print(f"Added {symbol} to recommended buys: RSI={weekly_rsi:.2f}, StochRSI={weekly_stoch_rsi:.2f}")
+                            elif weekly_stoch_rsi < 20 and weekly_rsi < 35:
+                                good_buys.append({
+                                    'symbol': symbol,
+                                    'price': close_price,
+                                    'weekly_rsi': weekly_rsi,
+                                    'weekly_stoch_rsi': weekly_stoch_rsi
+                                })
+                            print(f"Added {symbol} to good buys: RSI={weekly_rsi:.2f}, StochRSI={weekly_stoch_rsi:.2f}")
             # Format indicator values for display
             rsi_str = f"{rsi:.2f}" if not pd.isna(rsi) else "N/A"
             stoch_rsi_str = f"{stoch_rsi:.2f}" if not pd.isna(stoch_rsi) else "N/A"
